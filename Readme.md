@@ -1,6 +1,6 @@
 This function lets Pepper capture an image from its field of view.
 
-![alt text](https://github.com/TuyenNguyenTanViet/begining/blob/master/RefImage.png)
+(https://github.com/TuyenNguyenTanViet/begining/blob/master/RefImage.png)
 
 
 
