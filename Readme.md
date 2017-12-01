@@ -4,7 +4,7 @@
 
 - and then 
 
-![alt text1](https://github.com/TuyenNguyenTanViet/begining/blob/master/RefImage.png)
+![alt text](https://github.com/TuyenNguyenTanViet/begining/blob/master/RefImage.png)
 
 
 
