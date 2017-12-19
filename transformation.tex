@@ -1,0 +1,202 @@
+\chapter{Transformation Emotional Behaviors From Human Model Into Pepper Robot Model}
+\label{chap:transformation}
+
+This chapter presents our work on transformation from selected human emotional behaviors in Chapter \ref{chap:clustering} into Pepper robot model. 
+
+\section{Related Researches}
+
+Transformation between human and robot motion space or imitation has been received noticeable advances in recent years. During daily human-robot interaction, robot observed variety of new motion primitives from user, the approach of trajectory planning from joint space by technical programming and calibration, whenever new action observes, might be inappropriate for neutral human robot interaction. There is increasing need that robot should be able to neutrally learning from observer new motion primitives through interaction, as the result, nowadays the imitation learning is a well-established concept which appears promising approach for teaching robot new motions by demonstration \cite{argall2009survey}, robot then generates human-like movements similar to demonstrator. 
+
+In order to make the tele-operational control base on the similarities of human master (demonstrator) the robot slave (observer), information of human 3D pose is frequently used as the crucial input . Human pose could be obtained from many different resources including optical marker sensor (Vicon, Phase Space) or markerless sensor (Kinect Microsoft, Xtion), this system can detect body joint by triangulation between different obtained images or combine with information obtained from depth camera \cite{regazzoni2014rgb}, this system has been used by many researcher in this domain \cite{rosado2014using}\cite{zuher2012recognition}due to low-cost devices and easy for experiment setup, especially with Kinect Microsoft, Asus Xtion devices, demonstrator do not need to wear any external sensor during time of experiment. Another researches utilized inertial system which embedded accelerometers and gyroscopes to obtain information of demonstrator's movements to associate them with virtual skeleton, this technique has been used in many researches about tele-operation control \cite{stanton2012teleoperation}\cite{van2015development} due to high accuracy pose estimation and independent with lighting condition from outdoor environment. However, this system requires complicated experiment setup and may suffer of position drift \cite{vlasic2007practical}. Currently, our proposed model has been tested with Kinect and Xtion for real-time tele-operation, further discussion about experiment setup with these optical sensors could be found in Chapter \ref{chap:experiment}.
+
+Once the human pose has been detected, at the next stage, an appropriate method should be conducted to convert demonstrator's action which belong to human motion space into robot model. 
+\section{Research Approach}
+
+It is obvious that the number of degree of freedom (DOFs) and joint configurations are different between a human and the Pepper robot. As a result, the human joint position can not be directly mapped into the Pepper robot. The skeleton which belongs to human motion space should be transformed to the robot motion space with respect to the robot joint configuration in Figure \ref{transformation}.
+
+\begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=3 in]{figures/HumanJointConfiguration.PNG}
+	\end{center}
+	\caption{Joint Configuration On Human Right Hand}
+	\label{HumanJointConfiguration}
+\end{figure}
+
+\begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=3 in]{figures/PepperJointConfiguration.PNG}
+	\end{center}
+	\caption{Joint Configuration On Pepper Robot Right Hand}
+	\label{PepperJointConfiguration}
+\end{figure}
+
+\begin{table}[t!]
+	\centering
+	\caption{The Availability Degree Of Freedom In Term Of Human And Pepper Robot Model  }
+	\label{tab:DegreeOfFreedom}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\multicolumn{2}{|c|}{\begin{tabular}[c]{@{}c@{}}Joint \&\\ Degree of Freedom\end{tabular}}  & Human & Pepper Robot \\ \hline
+		\multirow{3}{*}{Shoulder (Left/Right)}                 & Roll (Left/Right)                  & \checkmark    &              \\ \cline{2-4} 
+		& Pitch (Left/Right)                 & \checkmark      & \checkmark              \\ \cline{2-4} 
+		& Yaw (Left/Right)                   & \checkmark     &  \checkmark            \\ \hline
+		\multirow{3}{*}{Elbow (Left/Right)}                    & Roll (Left/Right)                  &       & \checkmark             \\ \cline{2-4} 
+		& Pitch (Left/Right)                 & \checkmark      & \checkmark             \\ \cline{2-4} 
+		& Yaw (Left/Right)                   &       &              \\ \hline
+		\multirow{3}{*}{Hip (Left/Right)}                      & Roll (Left/Right)                  & \checkmark      & \checkmark             \\ \cline{2-4} 
+		& Pitch (Left/Right)                 & \checkmark      & \checkmark             \\ \cline{2-4} 
+		& Yaw (Left/Right)                  & \checkmark      &              \\ \hline
+	\end{tabular}
+\end{table}
+
+\begin{figure}[th]
+	\begin{center}
+		\includegraphics[width=6 in]{figures/transformation.PNG}
+	\end{center}
+	\caption{Transformation of human joint positions to Pepper joint angles}
+	\label{transformation}
+\end{figure}
+
+Our proposed transformation algorithms receives human skeleton frames as the input.The predicted human skeleton may include up to 20 body joints (in term of Kinect device), however, this study only pays attention to upper body part including \textit{Left/Right\_Hip},\textit{torso}, \textit{neck}, \textit{Left/Right\_Hand}, \textit{Left/Right\_Elbow}, \textit{Left/Right\_Shoulder}. For each skeleton frame, the obtained data consists set of Cartesian points in 3D space reference camera position which represented by $X$, $Y$, $Z$ axis in Figure \ref{transformation}
+\section{The Proposed Transformation Algorithm}
+
+\subsection{Reference Axis Calculation}
+
+Figure \ref{transformation} illustrates the obtained skeleton reference to $X$, $Y$, $Z$ axis represented for camera location. Having said that the above $X$, $Y$, $Z$ axis might be changed depending on referent position and orientation of device and observer. On the other hand, the proposed transformation algorithm should be independent from camera configuration, as the result, coordinate of \textit{left\_hip}, \textit{right\_hip} and \textit{torso} are ultimated to calculate reference axis $x_{ref}$, $y_{ref}$, $z_{ref}$ :
+
+\begin{align}
+\begin{split}
+& \vec{z_{ref}} = \frac{(\vec{right\_hip} - \vec{left\_hip}) \times (\vec{right\_hip} - \vec{torsor})}{|\vec{right\_hip} - \vec{left\_hip}| \times |\vec{right\_hip} - \vec{torsor}|} \\
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+& \vec{x_{ref}} = \vec{right\_hip} - \vec{left\_hip}
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+& \vec{z_{ref}} = \frac{( \vec{z\_{ref}} \times \vec{x_{ref}})} {|\vec{z\_{ref}}| \times |\vec{x\_{ref}}|} \\
+\end{split}
+\end{align}
+
+\subsection{Joint Angle Calculation}
+The proposed algorithms transfered from human motion space represented by joint positions into robot motion space. The following joint angle names were used reference to joint configurations in Pepper robot model.
+ 
+Firstly, the movement of upper \textit{left\_arm} on the $(x_{ref}$ - $y_{ref})$ plane is described by \textit{LeftShoulderRoll}, this value could be calculated based on position of \textit{left\_shoulder}, \textit{left\_elbow} and \textit{neck} as below:
+
+\begin{align}
+\begin{split}
+LeftShoulderRoll = & cos^{-1} \left( \frac{(\vec{left\_elbow} - \vec{left\_shoulder}) \cdot (\vec{right\_shoulder} -\vec{left\_shoulder})}{|\vec{left\_elbow} - \vec{left\_shoulder}| \cdot |\vec{right\_shoulder} -\vec{left\_shoulder}|} \right) \\ & - \frac{\pi}{2}
+\end{split}
+\end{align}
+
+On the other hand, \textit{LeftShoulderPitch} produces up-down movement for robot upper arm on $(y_{ref}$ - $z_{ref})$ plane, as the result, this angle related to coordinate of \textit{left\_shoulder}, \textit{left\_elbow} and the $y\_ref$ vector:   
+ 
+\begin{align}
+\begin{split}
+& LeftShoulderPitch = cos^{-1} \left( \frac{\vec{y\_ref} \cdot (\vec{left\_shoulder} -\vec{left\_elbow})}{|\vec{y\_ref}| \cdot |\vec{left\_shoulder} -\vec{left\_elbow}|} \right) - \frac{\pi}{2}
+\end{split}
+\end{align}
+
+The \textit{LeftElbowRoll} is produced by combination of left upper-arm and fore-arm vector as following: 
+
+\begin{align}
+\begin{split}
+LeftElbowRoll = & cos^{-1} \left( \frac{(\vec{left\_shoulder} - \vec{left\_elbow}) \cdot (\vec{left\_hand} -\vec{left\_elbow})}{|\vec{left\_shoulder} - \vec{left\_elbow}| \cdot |\vec{left\_hand} -\vec{left\_elbow}|} \right) \\ & - \frac{\pi}{2}
+\end{split}
+\end{align}
+
+The \textit{LeftElBowYaw} is made by rotation movement of left fore-arm around upper-arm. It is clear that this angle is not available in human model \cite{zuher2012recognition} \cite{rosado2014using}, in fact, this angles also relative to shoulder pitch and yaw, as the result, direct calculation as well as the above \textit{LeftElbowRoll} can not be conducted. Initially, vector $\vec{a}$ is created from $\vec{z_{ref}}$ and rotation vector in $Z$ and $Y$ axis as below: 
+
+\begin{align} \label{eq:vector_a}
+\begin{split}
+& \vec{a} = R_z(LeftShoulderRoll) \cdot R_y(LeftShoulderPitch) \cdot \vec{z_{ref}} \\
+\end{split}
+\end{align}
+
+Vector $\vec{b}$ represents for dot product created by combination of upper-arm and fore-arm vector:  
+\begin{align} \label{eq:vector_b}
+\begin{split}
+& \vec{b} = \frac{(\vec{left\_shoulder} - \vec{left\_elbow}) \times (\vec{left\_hand} -\vec{left\_elbow})}{|\vec{left\_shoulder} - \vec{left\_elbow}| \times |\vec{left\_hand} -\vec{left\_elbow}|}
+\end{split}
+\end{align}
+
+\textit{LeftElBowYaw} is then defined as the dot-product between vector $\vec{a}$ and $\vec{b}$ from Equation \ref{eq:vector_a} and \ref{eq:vector_b}, this value is then minus half of pi related to typical joints configuration in Pepper robot model.
+
+\begin{align}
+\begin{split}
+& LeftElbowYaw = cos^{-1} \left(\frac{\vec{a} \times \vec{b}}{|\vec{a}| \cdot |\vec{b}|} \right) - \frac{\pi}{2}
+\end{split}
+\end{align}
+
+Similarly, the corresponding Pepper robot joint angles on the right side are calculated respectively:
+
+\begin{align}
+\begin{split}
+RightShoulderRoll =  & - cos^{-1} \left( \frac{(\vec{right\_elbow} - \vec{right\_shoulder}) \cdot (\vec{left\_shoulder} -\vec{right\_shoulder})}{|\vec{right\_elbow} - \vec{right\_shoulder}| \cdot |\vec{left\_shoulder} -\vec{right\_shoulder}|} \right) \\ & + \frac{\pi}{2}
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+& RightShoulderPitch = cos^{-1} \left( \frac{\vec{y\_ref} \cdot (\vec{right\_shoulder} -\vec{right\_elbow})}{|\vec{y\_ref}| \cdot |\vec{right\_shoulder} -\vec{right\_elbow}|} \right) - \frac{\pi}{2}
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+RightElbowRoll = & - cos^{-1} \left( \frac{(\vec{right\_shoulder} - \vec{right\_elbow}) \cdot (\vec{right\_hand} -\vec{right\_elbow})}{|\vec{right\_shoulder} - \vec{right\_elbow}| \cdot |
+ \vec{right\_hand} -\vec{right\_elbow}|} \right) \\ & + \frac{\pi}{2}
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+& \vec{a} = R_z(RightShoulderRoll) \cdot R_y(RightShoulderPitch) \cdot \vec{z_{ref}} \\
+& \vec{b} = \frac{(\vec{right\_shoulder} - \vec{right\_elbow}) \times (\vec{right\_hand}  -\vec{right\_elbow})}{|\vec{right\_shoulder} - \vec{right\_elbow}| \times |\vec{right\_hand} -\vec{right\_elbow}|} \\
+& RightElbowYaw = - cos^{-1} \left(\frac{\vec{a} \times \vec{b}}{|\vec{a}| \cdot |\vec{b}|} \right) + \frac{\pi}{2}
+\end{split}
+\end{align}
+
+Finally, the last 2 joint angles \textit{HipRoll} and \textit{HipPitch} could be defined as below:
+\begin{align}
+\begin{split}
+HipRoll = & cos^{-1} \left( \frac{(\vec{torsor} - \vec{neck}) \cdot \vec{x_{ref}}}{|\vec{torsor} - \vec{neck}| \cdot |\vec{x_{ref}}|}\right) \\ 
+HipPitch = & cos^{-1} \left( \frac{(\vec{torsor} - \vec{neck}) \cdot \vec{z_{ref}}}{|\vec{torsor} - \vec{neck}| \cdot |\vec{z_{ref}}|}\right) 
+\end{split}
+\end{align}
+
+\begin{figure}[th]
+	\begin{center}
+		\includegraphics[width=3 in]{figures/transformation1.png}
+	\end{center}
+	\caption{Transformation of human joint positions to Pepper joint angles}
+	\label{transformation1}
+\end{figure}
+
+\begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=3 in]{figures/transformation2.PNG}
+	\end{center}
+	\caption{Transformation of human joint positions to Pepper joint angles}
+	\label{transformation2}
+\end{figure}
+
+\begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=3 in]{figures/transformation3.PNG}
+	\end{center}
+	\caption{Transformation of human joint positions to Pepper joint angles}
+	\label{transformation3}
+\end{figure}
+
+\begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=3 in]{figures/transformation4.PNG}
+	\end{center}
+	\caption{Transformation of human joint positions to Pepper joint angles}
+	\label{transformation4}
+\end{figure}
