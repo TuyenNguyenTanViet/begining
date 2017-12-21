@@ -1,0 +1,146 @@
+\chapter{Clustering Human Emotional Behaviors Through Daily Human Robot Interaction}
+\label{chap:clustering}
+
+\section{Research Approach}
+\label{sec:Research Approach}
+Our new approach to generating robot emotional body expressions was inspired by the infants' social development. In order to increase the engagement of the conversation and the empathy between a robot and a human during daily interactions, an appropriate emotional robot expression should be generated according to the personality and cultural identity of a person. Therefore, robots are required to generate their emotional behaviors in alignment with the emotional state of a person. According to psychological researches, one of the most common things that humans do is gathering information from the surrounding environment and then utilizing it to form their own interpretation and actions \cite{feinman1992critical}. Humans tend to use the perception of another person's interpretation in order to form their own interpretation about specific situations \cite{feinman1982social}. That is the way how infants acquire the new interpretations for their social development \cite{feinman1982social}. The infant's social development was an interesting motivation for this work to generate emotional body expressions of socially assistive robots. In order to achieve this goal, the robot should pay attention to their user's emotional body expression associated with a specific emotional state. To this end, the robot generates a representative emotional expression by considering the following two steps: (1) clustering of human emotional behavior samples into different groups based on similarity of body movements and (2) utilizing the most frequently observed behavior as the reference for the robot's emotional body expressions. 
+
+Why clustering????????????????????????????
+
+In order to obtain human body expression information, Kinect sensor can be easily used to extract demonstrator's skeleton. A set of actions $A_1,A_2,...,A_n$ were gradually received during day by day human-robot interaction. Action $A_i= [S_1,S_2,...,S_T] $ is the sequence of frames over a period of time $T$ and 
+
+
+
+
+$ S_t = [ x_1,x_2,...,x_{20};y_1,y_2,...,y_{20};z_1,z_2,...,z_{20} ]$ is the human skeleton information including 20 joint positions at time $t$. To extract a feature vector, the Covariance Descriptor method was used to encode sequence of frames $A_i$. Because an representative emotional behavior should be defined among a set of action samples, a generative model is an appropriate approach for clustering a set of human emotional body expression $A_1,A_2,...,A_n$ into $j$ clusters by considering the distribution of body movements. Then robot can utilize each cluster as a reference information for generating its emotional body expression by observing a human partner. This approach will be represented in part $2.2$.
+
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=7 in]{figures/Story.PNG}
+	\caption{Learning From User Behavior For “Happy” Emotional Expression during daily Human-Robot interaction }
+	\label{Story}
+\end{figure}
+
+\section{Covariance Descriptor}
+\label{sec:CovarianceDescriptor}
+An appropriate method should be applied to create feature vectors for sequence of skeleton motion during running time. The simple approach using skeletal joint angles, joint angle velocities and velocity of joints was proposed by Fothergill \cite{fothergill2012instructing}. However, number of frames should be equal to create the same length of feature vectors. On the other hand, Hussein et al \cite{hussein2013human} proposed a novel covariance descriptor approach which encoded the temporal dependency of joint locations. The dimension of Covariance descriptor is fixed and it is independent from the number of frame sequences. Moreover, the accuracy outperformed the state of art in human action recognition cite{padilla2014discussion}.
+
+\begin{figure}[t!]
+	\centering
+	\includegraphics[width=5 in]{figures/SkeletonInTimeline.png}
+	\caption{A set of human skeleton over T frames }
+	\label{SkeletonInTimeline}
+\end{figure}
+
+Consider an human action which is performed over T frames as Fig.2.2 and $S=[x_1,x_2,...,x_k;y_1,y_2,...,y_k;z_1,z_2,...,z_k]$ is the vector of skeleton joint positions at a frame t, vector $S$ represented for K joints of skeleton, as the result, $N=3 \times K$ elements were included in vector $S$. The covariance matrix is computed by
+\begin{equation}
+C(S) = \frac{1}{T-1} \sum_{t=1}^{\ T} (S- \overline{S})(S- \overline{S})'
+\end{equation}
+where $\overline{S}$ is the sample mean of $S$ and the $'$ is the transpose operator.
+The covariance descriptor was extracted from upper triangle of $C(S)$ including $N \times (N+1)/2$ elements. 
+
+\section{Self Organizing Map}
+From a set of descriptors which represents for set of human actions, in this step, clustering of human actions into different groups should be carried out to find a representative human actions. 
+
+Why SOM??????????????????????????????
+
+Image of SOM -----------------------------------------
+
+For that reason, this paper proposed to use Self Organizing Map (SOM) for clustering. SOM was originally introduced by Kohonen \cite{kohonen1990self} which creating a set of neurons representing for the distributions of whole original dataset. SOM ensures the topological properties of the descriptors were preserved after reducing from d-dimensional input space to low-dimensional space grid. Meaning that, if two different behavior samples were closed to each other in an original feature space, they should be remained with similar topological property in different dimensional grid. 2-dimensional grid are usually used as a suitable visualization surface for showing similarity between features. However, it should be emphasized that this visualization can only utilize the qualitative information about original dataset \cite{vesanto2000clustering}. In order to automatically cluster a set of descriptors, this paper firstly used SOM method for designing a grid of neurons which was considered as the training phase. Then, at the second phase, those neurons were clustered into different groups by using Distance Matrix Based approach \cite{vesanto2002distance}. Those descriptors in the original data and its corresponding neurons were finally found out based on Best Matching Unit (BMU) technique.
+
+For the $n$ input descriptors, each descriptor $x_i=[x_{i1},x_{i2},...,x_{id}]$ included d-dimensional features, a grid of $p \times r$ neurons was defined, each neuron represented by a prototype vector $m_i=[m_{i1},m_{i2},...,m_{id}]$. During the training time, an input sample $x_{sample}$ was picked up, then the wining neurons $m_{wining}$ with the shortest distance to the $x_{sample}$ was defined by BMU:
+\begin{equation}
+||x_{sample} - m_{wining}|| = min\{||x_{sample}-m||\}
+\label{eq:BMU}
+\end{equation}
+
+The wining neuron $m_{wining}$ was updated to make them move closer to the input sample $x_{sample}$ with the highest intense comparing with the rest of neurons by the equation below:
+\begin{equation}
+m_{wining} = m_{wining} + \alpha(t) \times (x_{sample}-m_{wining}) 
+\end{equation}
+Where $\alpha(t)$ is the learning rate at time $t$.
+
+It should be noticed that not only the wining neurons are updated with the new weight value, but neighbors of wining node $m_{i}$ are also affected through the neighborhood kernel function $\phi(m_i,m_{wining})$ by
+\begin{equation}
+m_{i} = m_{i} + \alpha(t) \times \phi(m_i,m_{wining}) \times (x_{sample}-m_{i})
+\end{equation}
+
+Neighborhood kernel function indicates the intensity of wining neuron affecting on its neighborhood. In this paper, we used Gaussian kernel function since the global topological relationship was better preserved \cite{fang2011topology}. Meaning that, the grid of neurons effectively reflects the distribution property of the original data. The advantage of topological preservation played crucial role for the second phase-clustering the neurons.\\
+The Gaussian kernel function was written as:
+\begin{equation}
+\label{eq:Gaussiankernel}
+h_{wi}(t)=exp\left(-\frac{||r_{wining}-r_i||^2}{2\sigma^2(t)}\right)
+\end{equation}
+where $r_{wining}$ and $r_i$ are the location of the wining neuron and the neuron i on the grid map, respectively.
+
+\section{Dynamic Self Structure}
+
+It is obvious that topological preservation is the main advantage of SOM for classifying descriptors obtained from Section \ref{sec:CovarianceDescriptor} into different groups, meaning that, if 2 descriptors are similar to each other, their representative neurons should be located near each other (neighbored neural units). On the other hand, during daily human robot interaction, number of human emotional behaviors will be incrementally observed as our research approach in Section \ref{sec:Research Approach}, as the result, incremental unsupervised learning method should be applied without corrupting previous model. Based on such requirements, Dynamic Cell Structure (DCS) \cite{bruske1995dynamic} can satisfy this research expectation whereas topological properties could be preserved as well as SOM approach and DCS could be applied as unsupervised incremental learning method.
+
+DCS represent family of artificial neural architecture which can be applied for both supervised and unsupervised learning, it belongs to class of Topology Representing Networks which build perfectly topology preserving feature maps \cite{ahrns1995line}. Similar to SOM, GCS inhered Kohonen type learning rule \cite{kohonen1990self} for updating weight of neural vectors while using Hebbian learning rule \cite{martinetz1993competitive} to dynamically update lateral connection structure (topology of the graph of neurals). DCS also works in a similar way with Growing Cell Structure (GCS) \cite{fritzke1994growing} excepts one essential difference: the lateral connections between neural units are not initially defined, instead, they are dynamically learned during training phase \cite{bruske1995dynamic} by Herbian learning rule described above. 
+
+The unsupervised DCS starts with initializing with 2 neural units $m_1$ and $m_2$, they are connected to each other by lateral connection of weight $C_{12} = C_{21} = 1$. It is noted that lateral connection of neurons is defined in the range from 0 to 1. $C_{ij} = 1$ if they are completely connected to each other and vice versa, $C_{ij} = 0$ if they are disconnected to each other and finally, lateral connections in DCS are always bidirectional and have symmetric weights.
+
+The DCS algorithms then enters into outer loop which repeated until stopping condition is raised, meaning that, quantization error has been dropped under predefine accuracy. Quantization error function could be defined as:
+
+\begin{equation}
+	\label{eq:Quantizationerror}
+	E_q = \sum_{x_i \in x}||x_i - m_{bmu(x_i)} ||^2
+\end{equation}  
+
+Where $m_{bmu(x_i)}$ is the best matching unit neuron to the descriptor $x_i$ in dataset. BMU function could be defined as Equation (\ref{eq:BMU})
+ 
+In our research approach, the inner loop function had been designed to incrementally obtaining in-coming descriptor $x_i$. Firstly, 2 neurons located closet $m_{bmu}$ and second closet $m_{second}$ to descriptor $x_i$ will be determined by Equation (\ref{equal:closetandsecond}), then lateral connections between neural units are updated based on Herbian learning rule \cite{martinetz1993competitive} as Equation (\ref{eq:HerbianRule}) .
+
+\begin{equation}
+\begin{split}
+\label{equal:closetandsecond}
+ ||m_{bmu} - x_i|| \le ||m_i - x_i||, (1 \le i \le N) \\
+ ||m_{second} - x_i|| \le ||m_i - x_i||, (1 \le i \le N) 
+\end{split}
+\end{equation}
+
+\begin{equation}
+	\label{eq:HerbianRule}
+	C_{ij}(t+1) = 
+	\begin{cases}
+	max\{ y_i \cdot y_j , C_{ij}(t) \} &: y_i \cdot y_j \ge y_k \cdot y_l \quad \forall (1 \le k,l \le N) \\
+	0 	   &: C_{ij}(t) < \theta \\
+	\alpha C_{ij}(t) &: otherwise
+	\end{cases}
+\end{equation}
+
+Where $\alpha$ is forgetting constant, $\theta$ is threshold for deleting lateral connection and $y_i = R(|| x - m_i ||)$ is the activation for the weight of neuron $m_i$ to its representation descriptor $x$.
+  
+DCS then updates weight of neuron vector similar based on Kohonen learning rule \cite{kohonen1990self} which similar to SOM:
+
+\begin{equation}
+\begin{split}
+ m_{bmu} = m_{bmu} + \alpha(t) \times (x_{i}-m_{bmu}) \\
+ m_{i} = m_{i} + \alpha(t) \times \phi(m_i,m_{bmu}) \times (x_{i}-m_{i})
+\end{split}
+\end{equation}
+
+With $m_{i}$ is neighbors of neuron $m_{bmu}$ and $\phi(m_i,m_{bmu})$ 
+is the neighborhood kernel function, in our experiment, Gaussian kernel function as Equation(\ref{eq:Gaussiankernel}) had been used.
+
+This inner loop is finished with updating resource value of the best matching unit neuron which described as Equation (\ref{eq:Quantizationerror}) and removing the connections between neuron $i$ and neuron $j$ if the lateral connections between them $C_{ij} = C_{ji} = 0$. If quantization error did not drop under stopping condition (predefine accuracy), the outer loop will add a new neuron unit $m_new$ which will located between neuron with largest and second largest resource value.
+
+Hence, similar to SOM, DCS can ensures the topological preservation on grid of trained neurons, at the same time, dynamically modify the lateral connections by Herbian learning rule \cite{martinetz1993competitive} and adding new unit on the grid of neurons if the quantization error is still higher than stopping condition. After grid of neurons had been trained, in Section \ref{sec:Clustering Phase}, these neurons will be classify into different clusters based on distance matrix.
+
+\section{Clustering Phase}
+\label{sec:Clustering Phase}
+Image of Original grid of trained neurons-----------------------------------------
+
+At the second phase - clustering neurons into separated clusters, several approaches were suggested such as agglomerative clustering or k-means algorithm \cite{vesanto2000clustering} \cite{lampinen1993clustering}. By using k-means for clustering neurons, this involved making several k-means clustering trials with different values of k \cite{vesanto2000clustering} and the best clustering should minimize the value of Davies-Bouldin index \cite{davies1979cluster}. However, the minimum value of Davies-Bouldin index was not always indicating the appropriate number of clusters. Another method is using distance matrix for clustering \cite{vesanto2002distance}. Distance matrix utilizes the advantage of SOM which the topological properties of the original data were preserved after training phase, as the result, distance between neighboring neurons are approximately proportional to the distribution of the original data \cite{vesanto2002distance}. In this method, local minima of the grid of neurons, called representative local neurons, can be selected by
+\begin{equation}
+f(m_i,N_i) \le f(m_j,N_j) \quad	\forall j \in N_i 
+\end{equation}
+where $f(m_i,N_i)=median\{||m_i-m_j||\}$ is the median distance between neuron $i$ and its neighboring neurons $j$. 
+After the representative local neurons are defined by Eq. 2.6, all neurons are appropriately clustered by minimizing the distance between the representative local neurons and them.
+Since neurons are designed to encode original data into a set of Voronoi sets $V_i = \{ x| ||x-m_i|| \le ||x-m_j|| \forall j \ne i\}$, as the result, each neuron and its corresponding data was defined by BMU function:  
+\begin{equation}
+||x - m_{i}|| = min\{||x-m||\}
+\end{equation}
+
+Image after classified grid of trained neurons ----------------------------------
